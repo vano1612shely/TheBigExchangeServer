@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id  Int @id @default(autoincrement())
+  login String
+  password String
+}
+
+model Info {
+  id  Int @id @default(autoincrement())
+  phone String?
+  telegram String?
+  telegramBot String?
+  instagram String?
+  exchange Float? @default(37.5)
+  address String?
+  percent Float @default(3)
+  telegramBotApi String?
+  telegramChatId String?
+}
+
+model City {
+  id  Int @id @default(autoincrement())
+  country String @default("Украина")
+  city_name String
+}
+
+model CryptoCurrency {
+   id  Int @id @default(autoincrement())
+   title String
+   icon_link String?
+   value String
+   type String
+}
+
+model Address {
+  id  Int @id @default(autoincrement())
+  region String
+  address String
+  city_name String
+}
+
+model Banks {
+  id  Int @id @default(autoincrement())
+  name String
+  icon_link String?
+}
+
+model Client {
+  id  Int @id @default(autoincrement())
+  name String
+  telegram String?
+  phone String
+  email String?
+  clientRequests ClientRequest[]
+  @@unique([phone, name])
+}
+
+model ClientRequest {
+  id  Int @id @default(autoincrement())
+  giveCurrency String
+  getCurrency String
+  giveSum Float
+  getSum Float
+  exchange Float
+  client_id Int
+  client Client @relation(fields: [client_id], references: [id])
+}
