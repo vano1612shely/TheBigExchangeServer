@@ -14,33 +14,31 @@ export class AuthService {
     private readonly databaseService: DatabaseService,
   ) {}
   async login(userData: LoginDto) {
-    try {
-      const candidate = await this.databaseService.user.findFirst({
-        where: { login: userData.login },
-      });
-      if (!candidate) {
-        throw new UnauthorizedException(
-          "Користувача з таким іменем не знайдено",
-        );
-      }
-      const checkPass = await bcrypt.compare(
-        userData.password,
-        candidate.password,
-      );
-      if (!checkPass) {
-        throw new UnauthorizedException("Пароль не вірний");
-      }
-      const payload = {
-        sub: candidate.id,
-        login: candidate.login,
-      };
-      return {
-        user: payload,
-        access_token: await this.jwtService.signAsync(payload),
-      };
-    } catch (e) {
-      throw new InternalServerErrorException(e.message);
+    // try {
+    const candidate = await this.databaseService.user.findFirst({
+      where: { login: userData.login },
+    });
+    if (!candidate) {
+      throw new UnauthorizedException("Користувача з таким іменем не знайдено");
     }
+    const checkPass = await bcrypt.compare(
+      userData.password,
+      candidate.password,
+    );
+    if (!checkPass) {
+      throw new UnauthorizedException("Пароль не вірний");
+    }
+    const payload = {
+      sub: candidate.id,
+      login: candidate.login,
+    };
+    return {
+      user: payload,
+      access_token: await this.jwtService.signAsync(payload),
+    };
+    // } catch (e) {
+    //   throw new InternalServerErrorException(e.message);
+    // }
   }
   async createUser(login, password) {
     const pass = await bcrypt.hash(password, 12);
