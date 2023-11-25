@@ -11,11 +11,7 @@ export class CityService {
         country: true,
         city_name: true,
       },
-      orderBy: {
-        country: "asc",
-      },
     });
-    console.log(citiesByCountry);
     const groupedCities = citiesByCountry.reduce((acc, city) => {
       if (!acc[city.country]) {
         acc[city.country] = [];

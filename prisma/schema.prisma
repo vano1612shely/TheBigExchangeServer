@@ -22,7 +22,7 @@ model Info {
   telegram String?
   telegramBot String?
   instagram String?
-  exchange Float? @default(37.5)
+  exchange Float @default(37.5)
   address String?
   percent Float @default(3)
   telegramBotApi String?

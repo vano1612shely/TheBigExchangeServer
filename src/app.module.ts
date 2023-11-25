@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ConfigModule } from "@nestjs/config";
-import configuration from "./config/configuration";
 import { DatabaseModule } from "./database/database.module";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { resolve } from "path";
@@ -16,7 +15,8 @@ import { ClientModule } from "./client/client.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration],
+      envFilePath: [".env"],
+      isGlobal: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: resolve(__dirname, "static"),

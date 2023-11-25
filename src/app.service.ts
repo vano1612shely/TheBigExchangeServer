@@ -18,6 +18,7 @@ export class AppService {
   async getPrice(pair: IPair) {
     try {
       const exchangeRate = await this.infoService.getUahCourse();
+      console.log(exchangeRate);
       const percent = await this.infoService.getPercent();
       let symbol;
       let price = 0;
@@ -64,6 +65,7 @@ export class AppService {
       const response = await axios.get(
         `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
       );
+      console.log(response.data);
       if (
         pair.getCurrency.type == "fiat" &&
         pair.getCurrency.value.toLowerCase() !== "usd"
