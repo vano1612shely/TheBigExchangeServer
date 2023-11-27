@@ -25,12 +25,27 @@ export class CurrencyService {
     });
     return res;
   }
+  async getPercent(id: number) {
+    const d = await this.databaseService.cryptoCurrency.findFirst({
+      select: { percent: true },
+      where: { id: Number(id) },
+    });
+    return d.percent;
+  }
+  async updatePercent(id: number, percent: number) {
+    const res = await this.databaseService.cryptoCurrency.update({
+      data: { percent: percent },
+      where: { id: id },
+    });
+    return res;
+  }
   async create(data: CreateCurrencyDto, file: Express.Multer.File) {
     let res = await this.databaseService.cryptoCurrency.create({
       data: {
         title: data.title,
         type: data.type,
         value: data.value,
+        percent: data.percent ? data.percent : 0,
       },
     });
     if (file) {

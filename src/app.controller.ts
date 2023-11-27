@@ -7,6 +7,7 @@ export class AppController {
 
   @Get("/price")
   async getData(@Query() pair: IPair) {
+    console.log(pair);
     return this.appService.getPrice(pair);
   }
 

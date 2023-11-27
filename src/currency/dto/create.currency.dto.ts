@@ -7,4 +7,5 @@ export default class CreateCurrencyDto {
   title: string;
   value: string;
   type: string;
+  percent?: number;
 }

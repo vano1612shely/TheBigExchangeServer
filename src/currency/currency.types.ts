@@ -3,4 +3,5 @@ export type CreateCurrency = {
   icon_link: string;
   value: string;
   type: string;
+  percent: number;
 };

@@ -5,23 +5,11 @@ import { InfoResponseDto, InfoResponseForAdminDto } from "./dto/info.dto";
 @Injectable()
 export class InfoService {
   constructor(private readonly databaseService: DatabaseService) {}
-  async getUahCourse() {
-    const d = await this.databaseService.info.findFirst({
-      select: { exchange: true },
-    });
-    return d.exchange;
-  }
   async getBotData() {
     const d = await this.databaseService.info.findFirst({
       select: { telegramBotApi: true, telegramChatId: true },
     });
     return d;
-  }
-  async getPercent() {
-    const d = await this.databaseService.info.findFirst({
-      select: { percent: true },
-    });
-    return d.percent;
   }
   async updateData(data: UpdateInfoType) {
     try {
@@ -32,7 +20,6 @@ export class InfoService {
         instagram,
         exchange,
         address,
-        percent,
         telegramBotApi,
         telegramChatId,
       } = data;
@@ -66,9 +53,6 @@ export class InfoService {
       }
       if (address !== undefined) {
         updateObject.address = address;
-      }
-      if (percent !== undefined) {
-        updateObject.percent = percent;
       }
       if (telegramBotApi !== undefined) {
         updateObject.telegramBotApi = telegramBotApi;

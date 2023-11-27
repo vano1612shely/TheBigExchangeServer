@@ -5,56 +5,92 @@ import { InfoService } from "./info/info.service";
 import { IMessageData } from "./message.interface";
 import { ClientService } from "./client/client.service";
 import { IClient, IClientRequest } from "./client/client-service.interface";
+import { CurrencyService } from "./currency/currency.service";
 
 @Injectable()
 export class AppService {
   constructor(
     private readonly infoService: InfoService,
     private readonly clientService: ClientService,
+    private readonly currencyService: CurrencyService,
   ) {}
+  private exchangeRates = [];
   addPercent(sum, percent) {
     return sum - (sum / 100) * percent;
   }
+  calculateExchangeRate(baseCurrency: string, targetCurrency: string) {
+    console.log(baseCurrency, targetCurrency);
+    const baseRate = this.exchangeRates.find(
+      (currency) => currency.cc === baseCurrency.toUpperCase(),
+    )?.rate;
+    const targetRate = this.exchangeRates.find(
+      (currency) => currency.cc === targetCurrency.toUpperCase(),
+    )?.rate;
+    console.log(baseRate, targetRate);
+    if (baseCurrency.toUpperCase() === "UAH") {
+      return 1 / targetRate; // UAH/USD: Ціна однієї гривні відносно долара
+    }
+    if (targetCurrency.toUpperCase() === "UAH") {
+      return baseRate; // USD/UAH: Курс долара до гривні
+    }
+    return targetRate / baseRate;
+  }
+
+  calculatePriceInCurrency(priceUSD, targetCurrency) {
+    console.log(targetCurrency);
+    const usdToTargetCurrency = this.calculateExchangeRate(
+      "USD",
+      targetCurrency,
+    );
+    console.log(usdToTargetCurrency);
+    if (usdToTargetCurrency === null) {
+      return 0; // Якщо не вдалося знайти курс для цільової валюти
+    }
+
+    return priceUSD * usdToTargetCurrency; // Обчислення ціни криптовалюти в цільовій валюті
+  }
+
   async getPrice(pair: IPair) {
     try {
-      const exchangeRate = await this.infoService.getUahCourse();
-      console.log(exchangeRate);
-      const percent = await this.infoService.getPercent();
+      const percent = await this.currencyService.getPercent(
+        pair.getCurrency.id,
+      );
+      const currencyRes = await axios.get(
+        "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json",
+      );
+      this.exchangeRates = currencyRes.data;
       let symbol;
       let price = 0;
       if (
-        (pair.giveCurrency.value.toLowerCase() == "usd" &&
-          pair.getCurrency.value.toLowerCase() == "usdt") ||
-        (pair.giveCurrency.value.toLowerCase() == "usdt" &&
-          pair.getCurrency.value.toLowerCase() == "usd")
+        pair.giveCurrency.value.toLowerCase() ==
+          pair.getCurrency.value.toLowerCase() ||
+        (pair.giveCurrency.value.toLowerCase() === "usd" &&
+          pair.getCurrency.value.toLowerCase() === "usdt") ||
+        (pair.giveCurrency.value.toLowerCase() === "usdt" &&
+          pair.getCurrency.value.toLowerCase() === "usd")
       ) {
         price = 1;
-        symbol = "USDTUSD";
         return {
           price: this.addPercent(price, percent),
-          symbol: symbol,
         };
       }
       if (
-        pair.giveCurrency.value.toLowerCase() == "usdt" &&
-        pair.getCurrency.value.toLowerCase() == "uah"
+        (pair.giveCurrency.type == "fiat" && pair.getCurrency.type == "fiat") ||
+        pair.giveCurrency.value.toLowerCase() === "usdt" ||
+        pair.getCurrency.value.toLowerCase() === "usdt"
       ) {
-        price = exchangeRate;
-        symbol = "USDUAH";
+        if (pair.giveCurrency.value.toLowerCase() === "usdt") {
+          price = this.calculateExchangeRate("USD", pair.getCurrency.value);
+        } else if (pair.getCurrency.value.toLowerCase() === "usdt") {
+          price = this.calculateExchangeRate(pair.giveCurrency.value, "USD");
+        } else {
+          price = this.calculateExchangeRate(
+            pair.giveCurrency.value,
+            pair.getCurrency.value,
+          );
+        }
         return {
           price: this.addPercent(price, percent),
-          symbol: symbol,
-        };
-      }
-      if (
-        pair.giveCurrency.value.toLowerCase() == "uah" &&
-        pair.getCurrency.value.toLowerCase() == "usdt"
-      ) {
-        price = 1 / exchangeRate;
-        symbol = "UAHUSD";
-        return {
-          price: this.addPercent(price, percent),
-          symbol: symbol,
         };
       }
       if (pair.giveCurrency.type == "fiat") {
@@ -65,12 +101,17 @@ export class AppService {
       const response = await axios.get(
         `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
       );
-      console.log(response.data);
+      console.log(response.data.price);
       if (
         pair.getCurrency.type == "fiat" &&
         pair.getCurrency.value.toLowerCase() !== "usd"
       ) {
-        price = response.data.price * exchangeRate;
+        console.log(123);
+        price = this.calculatePriceInCurrency(
+          response.data.price,
+          pair.getCurrency.value,
+        );
+        console.log(price);
       } else if (
         pair.getCurrency.type == "fiat" &&
         pair.getCurrency.value.toLowerCase() == "usd"
@@ -81,20 +122,26 @@ export class AppService {
         pair.giveCurrency.type == "fiat" &&
         pair.giveCurrency.value.toLowerCase() !== "usd"
       ) {
-        price = 1 / response.data.price / exchangeRate;
+        price =
+          1 /
+          this.calculatePriceInCurrency(
+            response.data.price,
+            pair.getCurrency.value,
+          );
       } else if (
         pair.giveCurrency.type == "fiat" &&
         pair.giveCurrency.value.toLowerCase() == "usd"
       ) {
         price = 1 / response.data.price;
       }
+      console.log(price);
       return {
         price: this.addPercent(price, percent),
-        symbol: symbol,
       };
     } catch (e) {
-      console.log(e.response.data);
-      return e.response.data;
+      return {
+        price: 1,
+      };
     }
   }
   async sendMessage(messageData: IMessageData) {
@@ -105,7 +152,16 @@ export class AppService {
     message += `Телефон: ${messageData.phone}\n`;
     message += `Telegram: ${messageData.telegram}\n`;
     message += `Пошта: ${messageData.email}\n`;
-    message += `Тип: ${messageData.type === "locale" ? "Нал\n" : "Безнал\n"}`;
+    if (messageData.type === "transaction") {
+      message += `Тип: Переказ коштів\n`;
+      message += `Тип траназції: ${messageData.transactionType}\n`;
+      if (messageData.transactionType === "offline") {
+        message += `Звідки: ${messageData.transactionFrom}\n`;
+        message += `Куди: ${messageData.transactionTo}\n`;
+      }
+    } else {
+      message += `Тип: ${messageData.type === "locale" ? "Нал\n" : "Безнал\n"}`;
+    }
     message += `${messageData.city ? `Місто: ${messageData.city}\n` : ""}`;
     message += `Віддає: ${messageData.giveCurrency.value}, кількість: ${messageData.giveSum}\n`;
     message += `Отримує: ${messageData.getCurrency.value}, кількість: ${messageData.getSum}\n`;
@@ -113,7 +169,12 @@ export class AppService {
     message += `${
       messageData.walletType ? `Банк: ${messageData.walletType}\n` : ""
     }`;
-    message += `Гаманець: ${messageData.wallet}\n`;
+    if (
+      messageData.type === "online" ||
+      messageData.transactionType === "online"
+    ) {
+      message += `Гаманець: ${messageData.wallet}\n`;
+    }
     console.log(message);
     if (telegram.telegramBotApi && telegram.telegramChatId) {
       const res = await axios.post(

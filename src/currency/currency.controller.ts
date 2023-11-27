@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -41,5 +42,11 @@ export class CurrencyController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return await this.currencyService.create(data, file);
+  }
+  @Private()
+  @Patch()
+  async updatePercent(@Body() data) {
+    console.log(data);
+    return await this.currencyService.updatePercent(data.id, data.percent);
   }
 }

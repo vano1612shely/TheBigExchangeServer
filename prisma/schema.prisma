@@ -22,9 +22,7 @@ model Info {
   telegram String?
   telegramBot String?
   instagram String?
-  exchange Float @default(37.5)
   address String?
-  percent Float @default(3)
   telegramBotApi String?
   telegramChatId String?
 }
@@ -40,6 +38,7 @@ model CryptoCurrency {
    title String
    icon_link String?
    value String
+   percent Float @default(0)
    type String
 }
 

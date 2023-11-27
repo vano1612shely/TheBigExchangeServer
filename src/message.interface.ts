@@ -2,6 +2,9 @@ export interface IMessageData {
   name: string;
   city?: string;
   type: string;
+  transactionType?: string;
+  transactionFrom?: string;
+  transactionTo?: string;
   giveCurrency: {
     id: number;
     title: string;
