@@ -8,10 +8,11 @@ import {
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/loginDto";
-import { Private } from "src/guards/decorators/private.decorator";
+import { Public } from "src/guards/decorators/public.decorator";
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @Public()
   @Post("login")
   @UsePipes(
     new ValidationPipe({
@@ -26,7 +27,6 @@ export class AuthController {
   login(@Body() userData: LoginDto) {
     return this.authService.login(userData);
   }
-  @Private()
   @Post("create")
   create(@Body() userData: LoginDto) {
     return this.authService.createUser(userData.login, userData.password);
