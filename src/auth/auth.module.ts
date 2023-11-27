@@ -3,7 +3,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { DatabaseModule } from "src/database/database.module";
 import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule, ConfigService } from "@nestjs/config/dist";
+import { ConfigModule } from "@nestjs/config/dist";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthGuard } from "src/guards/auth.guard";
 @Module({
@@ -12,7 +12,7 @@ import { AuthGuard } from "src/guards/auth.guard";
     DatabaseModule,
     JwtModule.register({
       global: true,
-      secret: new ConfigService().get("jwtSecret"),
+      secret: process.env.JWTSECRET,
       signOptions: { expiresIn: "30d" },
     }),
   ],

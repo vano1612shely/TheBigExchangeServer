@@ -46,7 +46,6 @@ export class CurrencyController {
   }
   @Patch()
   async updatePercent(@Body() data) {
-    console.log(data);
     return await this.currencyService.updatePercent(data.id, data.percent);
   }
 }

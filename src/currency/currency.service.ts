@@ -45,7 +45,7 @@ export class CurrencyService {
         title: data.title,
         type: data.type,
         value: data.value,
-        percent: data.percent ? data.percent : 0,
+        percent: Number(data.percent) ? Number(data.percent) : 0,
       },
     });
     if (file) {
