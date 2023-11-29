@@ -19,7 +19,7 @@ import { ClientModule } from "./client/client.module";
       isGlobal: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: resolve(__dirname, "..", "static"),
+      rootPath: resolve(__dirname, "static"),
     }),
     DatabaseModule,
     AuthModule,
