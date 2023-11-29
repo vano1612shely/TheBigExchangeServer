@@ -17,7 +17,6 @@ export class BanksService {
     let res = await this.databaseService.banks.create({
       data: {
         name: data.name,
-        icon_link: data.icon_link,
       },
     });
     if (file) {

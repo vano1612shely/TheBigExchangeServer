@@ -5,6 +5,7 @@ import {
   ValidationPipe,
   UsePipes,
   BadRequestException,
+  Delete,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/loginDto";
@@ -26,6 +27,10 @@ export class AuthController {
   )
   login(@Body() userData: LoginDto) {
     return this.authService.login(userData);
+  }
+  @Delete()
+  delete(@Body() data) {
+    return this.authService.deleteUser(data.id);
   }
   @Post("create")
   create(@Body() userData: LoginDto) {

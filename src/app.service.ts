@@ -19,7 +19,6 @@ export class AppService {
     return sum - (sum / 100) * percent;
   }
   calculateExchangeRate(baseCurrency: string, targetCurrency: string) {
-    console.log(baseCurrency, targetCurrency);
     const baseRate = this.exchangeRates.find(
       (currency) => currency.cc === baseCurrency.toUpperCase(),
     )?.rate;
@@ -33,11 +32,11 @@ export class AppService {
     if (targetCurrency.toUpperCase() === "UAH") {
       return baseRate; // USD/UAH: Курс долара до гривні
     }
-    return targetRate / baseRate;
+    return baseRate / targetRate;
   }
 
   calculatePriceInCurrency(priceUSD, targetCurrency) {
-    console.log(targetCurrency);
+    console.log(targetCurrency, 123);
     const usdToTargetCurrency = this.calculateExchangeRate(
       "USD",
       targetCurrency,
@@ -101,17 +100,14 @@ export class AppService {
       const response = await axios.get(
         `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
       );
-      console.log(response.data.price);
       if (
         pair.getCurrency.type == "fiat" &&
         pair.getCurrency.value.toLowerCase() !== "usd"
       ) {
-        console.log(123);
         price = this.calculatePriceInCurrency(
           response.data.price,
           pair.getCurrency.value,
         );
-        console.log(price);
       } else if (
         pair.getCurrency.type == "fiat" &&
         pair.getCurrency.value.toLowerCase() == "usd"
@@ -126,7 +122,7 @@ export class AppService {
           1 /
           this.calculatePriceInCurrency(
             response.data.price,
-            pair.getCurrency.value,
+            pair.giveCurrency.value,
           );
       } else if (
         pair.giveCurrency.type == "fiat" &&
@@ -134,7 +130,6 @@ export class AppService {
       ) {
         price = 1 / response.data.price;
       }
-      console.log(price);
       return {
         price: this.addPercent(price, percent),
       };
@@ -150,7 +145,11 @@ export class AppService {
     let message = `Нова заявка\n`;
     message += `Ім'я:${messageData.name}\n`;
     message += `Телефон: ${messageData.phone}\n`;
-    message += `Telegram: ${messageData.telegram}\n`;
+    message += `Telegram: ${
+      messageData.telegram.startsWith("@")
+        ? messageData.telegram
+        : "@" + messageData.telegram
+    }\n`;
     message += `Пошта: ${messageData.email}\n`;
     if (messageData.type === "transaction") {
       message += `Тип: Переказ коштів\n`;

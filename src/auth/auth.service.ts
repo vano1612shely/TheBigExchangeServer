@@ -47,6 +47,10 @@ export class AuthService {
     });
     return res;
   }
+  async deleteUser(id) {
+    const res = await this.databaseService.user.delete({ where: { id: id } });
+    return res;
+  }
   getUserIdFromToken(token: string): number | null {
     try {
       const payload = this.jwtService.verify(token);
