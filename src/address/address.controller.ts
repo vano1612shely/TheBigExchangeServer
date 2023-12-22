@@ -14,7 +14,6 @@ export class AddressController {
   }
   @Post()
   async create(@Body() data: IAddress) {
-    console.log(data);
     return await this.addressService.create(data);
   }
   @Delete()

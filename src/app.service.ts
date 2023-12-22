@@ -25,7 +25,6 @@ export class AppService {
     const targetRate = this.exchangeRates.find(
       (currency) => currency.cc === targetCurrency.toUpperCase(),
     )?.rate;
-    console.log(baseRate, targetRate);
     if (baseCurrency.toUpperCase() === "UAH") {
       return 1 / targetRate; // UAH/USD: Ціна однієї гривні відносно долара
     }
@@ -36,12 +35,10 @@ export class AppService {
   }
 
   calculatePriceInCurrency(priceUSD, targetCurrency) {
-    console.log(targetCurrency, 123);
     const usdToTargetCurrency = this.calculateExchangeRate(
       "USD",
       targetCurrency,
     );
-    console.log(usdToTargetCurrency);
     if (usdToTargetCurrency === null) {
       return 0; // Якщо не вдалося знайти курс для цільової валюти
     }
@@ -143,14 +140,18 @@ export class AppService {
     const telegram = await this.infoService.getBotData();
     await this.saveClientData(messageData);
     let message = `Нова заявка\n`;
+    if (messageData.requestId) {
+      message += `ID заявки: <code>${messageData.requestId}</code>\n`;
+    }
     message += `Ім'я:${messageData.name}\n`;
-    message += `Телефон: ${messageData.phone}\n`;
-    message += `Telegram: ${
-      messageData.telegram.startsWith("@")
-        ? messageData.telegram
-        : "@" + messageData.telegram
-    }\n`;
-    message += `Пошта: ${messageData.email}\n`;
+    if (messageData.phone) message += `Телефон: ${messageData.phone}\n`;
+    if (messageData.telegram)
+      message += `Telegram: ${
+        messageData.telegram.startsWith("@")
+          ? messageData.telegram
+          : "@" + messageData.telegram
+      }\n`;
+    if (messageData.email) message += `Пошта: ${messageData.email}\n`;
     if (messageData.type === "transaction") {
       message += `Тип: Переказ коштів\n`;
       message += `Тип траназції: ${messageData.transactionType}\n`;
@@ -165,22 +166,35 @@ export class AppService {
     message += `Віддає: ${messageData.giveCurrency.value}, кількість: ${messageData.giveSum}\n`;
     message += `Отримує: ${messageData.getCurrency.value}, кількість: ${messageData.getSum}\n`;
     message += `Курс: ${messageData.exchange}\n`;
-    message += `${
-      messageData.walletType ? `Банк: ${messageData.walletType}\n` : ""
-    }`;
     if (
       messageData.type === "online" ||
       messageData.transactionType === "online"
     ) {
+      if (messageData.getCurrency.type == "fiat")
+        message += `${messageData.bank ? `Банк: ${messageData.bank}\n` : ""}`;
+      else
+        message += `${
+          messageData.chain ? `Мережа: ${messageData.chain}\n` : ""
+        }`;
       message += `Гаманець: ${messageData.wallet}\n`;
     }
-    console.log(message);
+    if (messageData.from) {
+      message += `Заявка відправленна з `;
+      if (messageData.from == "site") {
+        message += "сайту\n";
+      } else if (messageData.from == "bot") {
+        message += "телеграм боту\n";
+      } else {
+        message += "невідомого ресурсу";
+      }
+    }
     if (telegram.telegramBotApi && telegram.telegramChatId) {
       const res = await axios.post(
         `https://api.telegram.org/bot${telegram.telegramBotApi}/sendMessage`,
         {
           chat_id: telegram.telegramChatId,
           text: message,
+          parse_mode: "HTML",
         },
       );
       if (res.data.ok) {
@@ -192,6 +206,8 @@ export class AppService {
   }
   async saveClientData(data: IMessageData) {
     const {
+      requestId,
+      clientId,
       name,
       telegram,
       phone,
@@ -201,8 +217,9 @@ export class AppService {
       getSum,
       giveSum,
       exchange,
+      from,
     } = data;
-    const client: IClient = { name, telegram, phone, email };
+    const client: IClient = { name, telegram, phone, email, clientId };
     const clientRes = await this.clientService.addClient(client);
     const requestData: IClientRequest = {
       client_id: clientRes.id,
@@ -211,6 +228,8 @@ export class AppService {
       getSum,
       giveSum,
       exchange,
+      from: from,
+      requestId: requestId,
     };
     const request = await this.clientService.addClientRequest(requestData);
     return request;

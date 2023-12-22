@@ -10,7 +10,7 @@ export class AppController {
   async getData(@Query() pair: IPair) {
     return this.appService.getPrice(pair);
   }
-
+  @Public()
   @Post("/sendMessage")
   async sendMessage(@Body() data) {
     return this.appService.sendMessage(data);

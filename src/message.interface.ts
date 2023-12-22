@@ -1,4 +1,6 @@
 export interface IMessageData {
+  requestId?: string;
+  clientId?: string;
   name: string;
   city?: string;
   type: string;
@@ -23,8 +25,10 @@ export interface IMessageData {
   getSum: number;
   exchange: number;
   wallet?: string;
-  walletType?: string;
+  bank?: string;
+  chain?: string;
   telegram?: string;
   phone: string;
   email?: string;
+  from?: string;
 }

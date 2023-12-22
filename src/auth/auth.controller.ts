@@ -32,6 +32,7 @@ export class AuthController {
   delete(@Body() data) {
     return this.authService.deleteUser(data.id);
   }
+  @Public()
   @Post("create")
   create(@Body() userData: LoginDto) {
     return this.authService.createUser(userData.login, userData.password);

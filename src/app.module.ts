@@ -12,6 +12,7 @@ import { CurrencyModule } from "./currency/currency.module";
 import { AddressModule } from "./address/address.module";
 import { BanksModule } from "./banks/banks.module";
 import { ClientModule } from "./client/client.module";
+import { ChainModule } from "./chain/chain.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,7 +20,7 @@ import { ClientModule } from "./client/client.module";
       isGlobal: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: resolve(__dirname, "static"),
+      rootPath: resolve(__dirname, "..", "static"),
     }),
     DatabaseModule,
     AuthModule,
@@ -29,6 +30,7 @@ import { ClientModule } from "./client/client.module";
     AddressModule,
     BanksModule,
     ClientModule,
+    ChainModule,
   ],
   controllers: [AppController],
   providers: [AppService],

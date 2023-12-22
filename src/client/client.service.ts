@@ -11,7 +11,11 @@ export class ClientService {
   ) {}
   async addClient(client: IClient) {
     const candidate = await this.databaseService.client.findFirst({
-      where: { phone: client.phone, name: client.name },
+      where: {
+        phone: client.phone,
+        name: client.name,
+        telegram: client.telegram,
+      },
     });
     if (candidate) {
       return candidate;
@@ -21,6 +25,7 @@ export class ClientService {
       telegram: "",
       name: "",
       phone: "",
+      clientId: "",
     };
     createData.name = client.name;
     createData.phone = client.phone;
@@ -29,6 +34,9 @@ export class ClientService {
     }
     if (client.email !== undefined) {
       createData.email = client.email;
+    }
+    if (client.clientId !== undefined) {
+      createData.clientId = client.clientId;
     }
     const res = await this.databaseService.client.create({
       data: createData,
@@ -46,6 +54,31 @@ export class ClientService {
   async getClients() {
     const res = await this.databaseService.client.findMany();
     return res;
+  }
+  async setStatus(requestId: string, status: string) {
+    const update = await this.databaseService.clientRequest.updateMany({
+      where: { requestId: requestId },
+      data: { status: status },
+    });
+    return update;
+  }
+  async getRequestById(id: string) {
+    const res = await this.databaseService.clientRequest.findFirst({
+      where: { requestId: id },
+    });
+    return res;
+  }
+  async getRequestsByClientId(clientId: string) {
+    const client = await this.databaseService.client.findFirst({
+      where: { clientId: String(clientId) },
+    });
+    if (client) {
+      const requests = await this.databaseService.clientRequest.findMany({
+        where: { client_id: client.id },
+      });
+      return requests;
+    }
+    return [];
   }
   async getClientsWithRequest() {
     const res = await this.databaseService.client.findMany({
@@ -65,7 +98,6 @@ export class ClientService {
   }
   async downloadClientsDataCSV() {
     const clientsWithRequests = await this.getClients();
-    console.log(clientsWithRequests);
     const csvContent = this.objectsToCSV(clientsWithRequests);
     const filename = "data.csv";
     await this.fileService.createFileFromBuffer(

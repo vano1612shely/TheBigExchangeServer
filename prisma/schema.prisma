@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -40,6 +40,7 @@ model CryptoCurrency {
    value String
    percent Float @default(0)
    type String
+   chains Chain[]
 }
 
 model Address {
@@ -61,8 +62,9 @@ model Client {
   telegram String?
   phone String
   email String?
+  clientId String?
   clientRequests ClientRequest[]
-  @@unique([phone, name])
+  @@unique([phone, name, telegram])
 }
 
 model ClientRequest {
@@ -74,4 +76,13 @@ model ClientRequest {
   exchange Float
   client_id Int
   client Client @relation(fields: [client_id], references: [id])
+  from String @default("site")
+  status String? @default("in_process")
+  requestId String? @unique()
+}
+
+model Chain {
+  id  Int @id @default(autoincrement())
+  name String 
+  currencies CryptoCurrency[]
 }

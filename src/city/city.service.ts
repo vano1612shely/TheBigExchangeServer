@@ -19,7 +19,6 @@ export class CityService {
       acc[city.country].push(city);
       return acc;
     }, {});
-    console.log(groupedCities);
     return groupedCities;
   }
   async getCityListWithoutFormat() {

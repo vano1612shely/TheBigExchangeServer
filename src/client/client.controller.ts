@@ -1,6 +1,7 @@
-import { Controller, Get, Res } from "@nestjs/common";
+import { Body, Controller, Get, Post, Res } from "@nestjs/common";
 import { Response } from "express";
 import { ClientService } from "./client.service";
+import { Public } from "src/guards/decorators/public.decorator";
 
 @Controller("client")
 export class ClientController {
@@ -8,6 +9,21 @@ export class ClientController {
   @Get()
   async getClients() {
     return await this.clientService.getClients();
+  }
+  @Public()
+  @Post("/setStatus")
+  async setStatus(@Body() data) {
+    return await this.clientService.setStatus(data.requestId, data.status);
+  }
+  @Public()
+  @Get("/request")
+  async getRequestById(@Body() res) {
+    return await this.clientService.getRequestById(res.id);
+  }
+  @Public()
+  @Get("/getRequestsByClientId")
+  async getRequestsByClientId(@Body() data) {
+    return await this.clientService.getRequestsByClientId(data.clientId);
   }
   @Get("/fullData")
   async getClientsWithRequest() {
