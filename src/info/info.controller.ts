@@ -10,6 +10,11 @@ export class InfoController {
   async getAllData() {
     return await this.infoService.getAllData();
   }
+  @Public()
+  @Get("/getBotData")
+  async getBotData() {
+    return await this.infoService.getBotData();
+  }
   @Get("/getAllForAdmin")
   async getAllDataForAdmin() {
     return await this.infoService.getAllDataForAdmin();
