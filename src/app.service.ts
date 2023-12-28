@@ -178,17 +178,15 @@ export class AppService {
         }`;
       message += `Гаманець: ${messageData.wallet}\n`;
     }
-    if (messageData.from) {
-      message += `Заявка відправленна з `;
-      if (messageData.from == "site") {
-        message += "сайту\n";
-      } else if (messageData.from == "bot") {
-        message += "телеграм боту\n";
-      } else if (messageData.from == "app") {
-        message += "застосунку\n";
-      } else {
-        message += "невідомого ресурсу";
-      }
+    message += `Заявка відправленна з `;
+    if (messageData.from == "site") {
+      message += "сайту\n";
+    } else if (messageData.from == "bot") {
+      message += "телеграм боту\n";
+    } else if (messageData.from == "app") {
+      message += "застосунку\n";
+    } else {
+      message += "невідомого ресурсу";
     }
     if (telegram.telegramBotApi && telegram.telegramChatId) {
       const res = await axios.post(
