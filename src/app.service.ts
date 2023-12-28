@@ -184,6 +184,8 @@ export class AppService {
         message += "сайту\n";
       } else if (messageData.from == "bot") {
         message += "телеграм боту\n";
+      } else if (messageData.from == "app") {
+        message += "застосунку\n";
       } else {
         message += "невідомого ресурсу";
       }
