@@ -13,6 +13,7 @@ import { AddressModule } from "./address/address.module";
 import { BanksModule } from "./banks/banks.module";
 import { ClientModule } from "./client/client.module";
 import { ChainModule } from "./chain/chain.module";
+import { PostModule } from "./post/post.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { ChainModule } from "./chain/chain.module";
     BanksModule,
     ClientModule,
     ChainModule,
+    PostModule,
   ],
   controllers: [AppController],
   providers: [AppService],
