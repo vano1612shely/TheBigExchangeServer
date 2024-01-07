@@ -3,6 +3,8 @@ import { DatabaseService } from "src/database/database.service";
 import { FilesService } from "src/files/files.service";
 import { ICreatePost, IUpdatePost } from "./post.interface";
 import axios from "axios";
+import { resolve } from "path";
+import * as fs from "fs";
 @Injectable()
 export class PostService {
   constructor(
@@ -45,39 +47,55 @@ export class PostService {
       data: { type: "PUBLISHED" },
       include: { media: true },
     });
-    const text = post.content
-      .replace(/<img[^>]*>/g, "")
-      .replace(/<strong\b[^>]*>/g, "<b>")
-      .replace(/<\/strong>/g, "</b>")
-      .replace(/<h1>(.*?)<\/h1>/g, "<b>")
-      .replace(/<h2>(.*?)<\/h2>/g, "</b>")
-      .replace(/<em\b[^>]*>/g, "<i>")
-      .replace(/<\/em>/g, "</i>")
-      .replace(/<b><pre\b[^>]/g, "<pre>")
-      .replace(/<\/pre><\/b>>/g, "</pre>")
-      .replace(/<br\s*\/?>/gs, "\n")
-      .replace(/<\/p>/gs, "\n")
-      .replace(/<p>/gs, "")
-      .replace(/<span[^>]*>/gs, "")
-      .replace(/<\/span>/gs, "")
-      .replace(/<sup\b[^>]*>/gi, "[")
-      .replace(/<\/sup>/gi, "]")
-      .replace(/<sub\b[^>]*>/gi, "[")
-      .replace(/<\/sub>/gi, "]")
-      .replace(
-        /<blockquote\b[^>]*>(.*?)<\/blockquote>/gi,
-        (match, group) => `"${group}"`,
-      )
-      .replace(/<ol[^>]*>|<\/ol>|<ul[^>]*>|<\/ul>/gi, "")
-      .replace(/<li\b[^>]*>(.*?)<\/li>/gi, "• $1\n");
-    await axios.post(
-      `https://api.telegram.org/bot6292118007:AAF2wEBMrPUKpS5rxvl23zxfkHzBJFrmQMU/sendMessage`,
-      {
-        chat_id: 524803435,
-        text: text,
-        parse_mode: "HTML",
-      },
-    );
+    // let text = post.content
+    //   .replace(/<img[^>]*>/g, "")
+    //   .replace(/<strong\b[^>]*>/g, "<b>")
+    //   .replace('class="ql-syntax" spellcheck="false">', "")
+    //   .replace(/<\/strong>/g, "</b>")
+    //   .replace(/<h1>(.*?)<\/h1>/g, "<b>")
+    //   .replace(/<h2>(.*?)<\/h2>/g, "</b>")
+    //   .replace(/<em\b[^>]*>/g, "<i>")
+    //   .replace(/<\/em>/g, "</i>")
+    //   .replace(/<b><pre\b[^>]/g, "<pre>")
+    //   .replace(/<\/pre><\/b>>/g, "</pre>")
+    //   .replace(/<br\s*\/?>/gs, "\n")
+    //   .replace(/<\/p>/gs, "\n")
+    //   .replace(/<p>/gs, "")
+    //   .replace(/<span[^>]*>/gs, "")
+    //   .replace(/<\/span>/gs, "")
+    //   .replace(/<sup\b[^>]*>/gi, "[")
+    //   .replace(/<\/sup>/gi, "]")
+    //   .replace(/<sub\b[^>]*>/gi, "[")
+    //   .replace(/<\/sub>/gi, "]")
+    //   .replace(/<ol[^>]*>|<\/ol>|<ul[^>]*>|<\/ul>/gi, "")
+    //   .replace(/<li\b[^>]*>(.*?)<\/li>/gi, "• $1\n");
+    // // Read the photo file
+    // const photo = fs.readFileSync(
+    //   resolve(__dirname, "..", "..", "static", post.header),
+    // );
+    // const photoUrl = "http://localhost:5000/" + post.header;
+    // const botToken = "6292118007:AAF2wEBMrPUKpS5rxvl23zxfkHzBJFrmQMU";
+    // // Form data for the request
+    // const formData = new FormData();
+    // text = '<a href="' + photoUrl + '">&#8205;</a>' + text;
+    // formData.append("chat_id", "524803435");
+    // formData.append("text", text);
+    // formData.append("parse_mode", "HTML");
+    // try {
+    //   // Axios POST request to send photo with HTML text
+    //   const response = await axios.post(
+    //     `https://api.telegram.org/bot${botToken}/sendMessage`,
+    //     formData,
+    //     {
+    //       headers: {
+    //         "Content-Type": "multipart/form-data",
+    //       },
+    //       data: formData,
+    //     },
+    //   );
+    // } catch (e) {
+    //   console.log(e);
+    // }
     return post;
   }
   async update(data: IUpdatePost) {

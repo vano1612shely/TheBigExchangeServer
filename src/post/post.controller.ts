@@ -63,7 +63,6 @@ export class PostController {
     return await this.postService.getLastPost();
   }
 
-  @Public()
   @Get("/view")
   async view(@Query("id") id) {
     return await this.postService.view(Number(id));
