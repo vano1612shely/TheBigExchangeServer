@@ -14,6 +14,7 @@ import { BanksModule } from "./banks/banks.module";
 import { ClientModule } from "./client/client.module";
 import { ChainModule } from "./chain/chain.module";
 import { PostModule } from "./post/post.module";
+import { ReviewsModule } from './reviews/reviews.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +34,7 @@ import { PostModule } from "./post/post.module";
     ClientModule,
     ChainModule,
     PostModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

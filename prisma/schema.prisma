@@ -11,103 +11,113 @@ datasource db {
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  login String
+  id       Int    @id @default(autoincrement())
+  login    String
   password String
 }
 
 model Info {
-  id  Int @id @default(autoincrement())
-  phone String?
-  telegram String?
-  telegramBot String?
-  instagram String?
-  address String?
+  id             Int     @id @default(autoincrement())
+  phone          String?
+  telegram       String?
+  telegramBot    String?
+  instagram      String?
+  address        String?
   telegramBotApi String?
   telegramChatId String?
 }
 
 model City {
-  id  Int @id @default(autoincrement())
-  country String @default("Украина")
+  id        Int    @id @default(autoincrement())
+  country   String @default("Украина")
   city_name String
 }
 
 model CryptoCurrency {
-   id  Int @id @default(autoincrement())
-   title String
-   icon_link String?
-   value String
-   percent Float @default(0)
-   type String
-   chains Chain[]
+  id        Int     @id @default(autoincrement())
+  title     String
+  icon_link String?
+  value     String
+  percent   Float   @default(0)
+  type      String
+  chains    Chain[]
 }
 
 model Address {
-  id  Int @id @default(autoincrement())
-  region String
-  address String
+  id        Int    @id @default(autoincrement())
+  region    String
+  address   String
   city_name String
 }
 
 model Banks {
-  id  Int @id @default(autoincrement())
-  name String
+  id        Int     @id @default(autoincrement())
+  name      String
   icon_link String?
 }
 
 model Client {
-  id  Int @id @default(autoincrement())
-  name String
-  telegram String?
-  phone String
-  email String?
-  clientId String?
+  id             Int             @id @default(autoincrement())
+  name           String
+  telegram       String?
+  phone          String
+  email          String?
+  clientId       String?
   clientRequests ClientRequest[]
+
   @@unique([phone, name, telegram])
 }
 
 model ClientRequest {
-  id  Int @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   giveCurrency String
-  getCurrency String
-  giveSum Float
-  getSum Float
-  exchange Float
-  client_id Int
-  client Client @relation(fields: [client_id], references: [id])
-  from String @default("site")
-  status String? @default("in_process")
-  requestId String? @unique()
+  getCurrency  String
+  giveSum      Float
+  getSum       Float
+  exchange     Float
+  client_id    Int
+  client       Client  @relation(fields: [client_id], references: [id])
+  from         String  @default("site")
+  status       String? @default("in_process")
+  requestId    String? @unique()
 }
 
 model Chain {
-  id  Int @id @default(autoincrement())
-  name String 
+  id         Int              @id @default(autoincrement())
+  name       String
   currencies CryptoCurrency[]
 }
 
 model Post {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   type        PostTypeEnum @default(SAVED)
   title       String
   content     String
-  header      String @default("")
-  createdAt   DateTime  @default(now())
-  views       Int @default(0)
-  media      Media[]
-  description String @default("")
-  keywords String @default("")
+  header      String       @default("")
+  createdAt   DateTime     @default(now())
+  views       Int          @default(0)
+  media       Media[]
+  description String       @default("")
+  keywords    String       @default("")
 }
 
 model Media {
-  id        Int     @id @default(autoincrement())
-  url       String
-  postId    Int
-  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id     Int    @id @default(autoincrement())
+  url    String
+  postId Int
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 enum PostTypeEnum {
   PUBLISHED
   SAVED
+}
+
+model Review {
+  id      Int      @id @default(autoincrement())
+  name    String
+  country String   @default("")
+  review  String
+  date    DateTime @default(now())
+  stars   Int
 }
