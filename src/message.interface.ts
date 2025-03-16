@@ -3,7 +3,14 @@ export interface IMessageData {
   clientId?: string;
   name: string;
   city?: string;
-  type: string;
+  getType: {
+    value: string;
+    label: string;
+  };
+  giveType: {
+    value: string;
+    label: string;
+  };
   transactionType?: string;
   transactionFrom?: string;
   transactionTo?: string;

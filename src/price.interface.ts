@@ -14,4 +14,5 @@ export interface IPair {
     iconLink?: string;
     percent: number;
   };
+  city_id?: number;
 }

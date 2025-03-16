@@ -26,9 +26,18 @@ export class CityService {
     const cityList = await this.databaseService.city.findMany();
     return cityList;
   }
-  async addCity(cityName: string, country: string) {
+
+  async getPercent(id: number) {
+    const data = await this.databaseService.city.findMany({
+      where: {
+        id: id,
+      },
+    });
+    return data[0].percent;
+  }
+  async addCity(cityName: string, country: string, percent?: number) {
     const cityList = await this.databaseService.city.create({
-      data: { city_name: cityName, country: country },
+      data: { city_name: cityName, country: country, percent: percent || 0 },
     });
     return cityList;
   }

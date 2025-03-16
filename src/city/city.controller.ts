@@ -17,7 +17,11 @@ export class CityController {
   }
   @Post()
   async addCity(@Body() data) {
-    return await this.cityService.addCity(data.city, data.country);
+    return await this.cityService.addCity(
+      data.city,
+      data.country,
+      data?.percent,
+    );
   }
   @Delete()
   async deleteCity(@Body() data) {
