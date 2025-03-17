@@ -249,9 +249,19 @@ export class AppService {
       message += `${messageData.city ? `Місто: ${messageData.city}\n` : ""}`;
     message += `Тип: ${messageData.giveType.value} Віддає: ${messageData.giveCurrency.value}, кількість: ${messageData.giveSum}\n`;
     message += `Тип: ${messageData.getType.value} Отримує: ${messageData.getCurrency.value}, кількість: ${messageData.getSum}\n`;
-    message += `${
-      messageData.wallet ? `Гаманець: ${messageData.wallet}\n` : ""
-    }`;
+    if (
+      messageData.getType.value !== "cash" &&
+      messageData.getCurrency.type === "fiat"
+    ) {
+      message += `${messageData.bank ? `Банк: ${messageData.bank}\n` : ""}`;
+      message += `Гаманець: ${messageData.wallet}\n`;
+    } else if (
+      messageData.getType.value !== "cash" &&
+      messageData.getCurrency.type === "crypto"
+    ) {
+      message += `${messageData.chain ? `Мережа: ${messageData.chain}\n` : ""}`;
+      message += `Гаманець: ${messageData.wallet}\n`;
+    }
     message += `Курс: ${messageData.exchange}\n`;
     message += `Заявка відправлена з `;
     if (messageData.from == "site") {
