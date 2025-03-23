@@ -227,6 +227,9 @@ export class AppService {
   }
 
   async sendMessage(messageData: IMessageData) {
+    if (messageData.from == "bot") {
+      return await this.sendMessageFromBot(messageData);
+    }
     const telegram = await this.infoService.getBotData();
     await this.saveClientData(messageData);
     let message = `Нова заявка\n`;
@@ -264,6 +267,74 @@ export class AppService {
     }
     message += `Курс: ${messageData.exchange}\n`;
     message += `Заявка відправлена з `;
+    if (messageData.from == "site") {
+      message += "сайту\n";
+    } else if (messageData.from == "bot") {
+      message += "телеграм боту\n";
+    } else if (messageData.from == "app") {
+      message += "застосунку\n";
+    } else {
+      message += "невідомого ресурсу";
+    }
+    if (telegram.telegramBotApi && telegram.telegramChatId) {
+      const res = await axios.post(
+        `https://api.telegram.org/bot${telegram.telegramBotApi}/sendMessage`,
+        {
+          chat_id: telegram.telegramChatId,
+          text: message,
+          parse_mode: "HTML",
+        },
+      );
+      if (res.data.ok) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+  async sendMessageFromBot(messageData: IMessageData) {
+    const telegram = await this.infoService.getBotData();
+    await this.saveClientData(messageData);
+    let message = `Нова заявка\n`;
+    if (messageData.requestId) {
+      message += `ID заявки: <code>${messageData.requestId}</code>\n`;
+    }
+    message += `Ім'я:${messageData.name}\n`;
+    if (messageData.phone) message += `Телефон: ${messageData.phone}\n`;
+    if (messageData.telegram)
+      message += `Telegram: ${
+        messageData.telegram.startsWith("@")
+          ? messageData.telegram
+          : "@" + messageData.telegram
+      }\n`;
+    if (messageData.email) message += `Пошта: ${messageData.email}\n`;
+    if (messageData.type === "transaction") {
+      message += `Тип: Переказ коштів\n`;
+      message += `Тип траназції: ${messageData.transactionType}\n`;
+      if (messageData.transactionType === "offline") {
+        message += `Звідки: ${messageData.transactionFrom}\n`;
+        message += `Куди: ${messageData.transactionTo}\n`;
+      }
+    } else {
+      message += `Тип: ${messageData.type === "locale" ? "Нал\n" : "Безнал\n"}`;
+    }
+    message += `${messageData.city ? `Місто: ${messageData.city}\n` : ""}`;
+    message += `Віддає: ${messageData.giveCurrency.value}, кількість: ${messageData.giveSum}\n`;
+    message += `Отримує: ${messageData.getCurrency.value}, кількість: ${messageData.getSum}\n`;
+    message += `Курс: ${messageData.exchange}\n`;
+    if (
+      messageData.type === "online" ||
+      messageData.transactionType === "online"
+    ) {
+      if (messageData.getCurrency.type == "fiat")
+        message += `${messageData.bank ? `Банк: ${messageData.bank}\n` : ""}`;
+      else
+        message += `${
+          messageData.chain ? `Мережа: ${messageData.chain}\n` : ""
+        }`;
+      message += `Гаманець: ${messageData.wallet}\n`;
+    }
+    message += `Заявка відправленна з `;
     if (messageData.from == "site") {
       message += "сайту\n";
     } else if (messageData.from == "bot") {

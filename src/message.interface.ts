@@ -2,6 +2,7 @@ export interface IMessageData {
   requestId?: string;
   clientId?: string;
   name: string;
+  type: string;
   city?: string;
   getType: {
     value: string;
