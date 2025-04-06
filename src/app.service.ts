@@ -235,7 +235,7 @@ export class AppService {
     const requestData = await this.saveClientData(messageData);
     let message = `Нова заявка\n`;
     if (requestData.id) {
-      message += `ID заявки: <code>${messageData.requestId}</code>\n`;
+      message += `ID заявки: <code>${requestData.id}</code>\n`;
     }
     message += `Ім'я:${messageData.name}\n`;
     if (messageData.phone) message += `Телефон: ${messageData.phone}\n`;
