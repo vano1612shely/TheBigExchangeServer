@@ -1,7 +1,15 @@
-import { Body, Controller, Get, Post, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from "@nestjs/common";
 import { Response } from "express";
 import { ClientService } from "./client.service";
-import { Public } from "src/guards/decorators/public.decorator";
 
 @Controller("client")
 export class ClientController {
@@ -10,17 +18,32 @@ export class ClientController {
   async getClients() {
     return await this.clientService.getClients();
   }
-  @Public()
   @Post("/setStatus")
   async setStatus(@Body() data) {
     return await this.clientService.setStatus(data.requestId, data.status);
   }
-  @Public()
+
   @Get("/request")
-  async getRequestById(@Body() res) {
-    return await this.clientService.getRequestById(res.id);
+  async getRequests(
+    @Query("page") page = "1",
+    @Query("per_page") perPage = "10",
+  ) {
+    const pageNumber = parseInt(page);
+    const perPageNumber = parseInt(perPage);
+
+    return await this.clientService.getRequests({
+      page: pageNumber,
+      perPage: perPageNumber,
+    });
   }
-  @Public()
+  @Get("/request/:id")
+  async getRequestById(@Param() { id }: { id: string }) {
+    if (!id) {
+      return null;
+    }
+    const result = await this.clientService.getRequestById(id);
+    return result;
+  }
   @Get("/getRequestsByClientId")
   async getRequestsByClientId(@Body() data) {
     return await this.clientService.getRequestsByClientId(data.clientId);

@@ -10,6 +10,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RequestStatus {
+  IN_PROGRESS      // В роботі
+  PAYOUT_PROCESS   // Процес виплати
+  COMPLETED        // Завершена
+  CANCELED         // Скасована
+}
+
+model ClientRequest {
+  id           Int            @id @default(autoincrement())
+  city         String?
+  giveType     String?
+  getType      String?
+  giveCurrency String
+  getCurrency  String
+  giveSum      Float
+  getSum       Float
+  exchange     Float
+  client_id    Int
+  client       Client         @relation(fields: [client_id], references: [id])
+  from         String         @default("site")
+  status       RequestStatus  @default(IN_PROGRESS)
+  createdAt    DateTime       @default(now())
+  bank         String?
+  chain        String?
+  wallet       String?
+}
+
 model User {
   id       Int    @id @default(autoincrement())
   login    String
@@ -68,21 +95,6 @@ model Client {
 
   @@unique([phone, name, telegram])
 }
-
-model ClientRequest {
-  id           Int     @id @default(autoincrement())
-  giveCurrency String
-  getCurrency  String
-  giveSum      Float
-  getSum       Float
-  exchange     Float
-  client_id    Int
-  client       Client  @relation(fields: [client_id], references: [id])
-  from         String  @default("site")
-  status       String? @default("in_process")
-  requestId    String? @unique()
-}
-
 model Chain {
   id         Int              @id @default(autoincrement())
   name       String

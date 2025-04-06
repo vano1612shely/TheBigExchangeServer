@@ -3,6 +3,13 @@ import { IClient, IClientRequest } from "./client-service.interface";
 import { DatabaseService } from "src/database/database.service";
 import * as XLSX from "xlsx";
 import { FilesService } from "src/files/files.service";
+import { RequestStatus } from "@prisma/client";
+
+interface PaginationParams {
+  page: number;
+  perPage: number;
+}
+
 @Injectable()
 export class ClientService {
   constructor(
@@ -55,16 +62,65 @@ export class ClientService {
     const res = await this.databaseService.client.findMany();
     return res;
   }
-  async setStatus(requestId: string, status: string) {
+  async setStatus(id: string, status: number) {
+    const formatStatus = {
+      0: RequestStatus.IN_PROGRESS,
+      1: RequestStatus.PAYOUT_PROCESS,
+      2: RequestStatus.COMPLETED,
+      3: RequestStatus.CANCELED,
+    };
     const update = await this.databaseService.clientRequest.updateMany({
-      where: { requestId: requestId },
-      data: { status: status },
+      where: { id: Number(id) },
+      data: { status: formatStatus[status] },
     });
     return update;
   }
+  async getRequests({ page, perPage }: PaginationParams) {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+
+    const [data, total] = await Promise.all([
+      this.databaseService.clientRequest.findMany({
+        skip,
+        take,
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          giveCurrency: true,
+          getCurrency: true,
+          giveSum: true,
+          getSum: true,
+          exchange: true,
+          client_id: true,
+          from: true,
+          status: true,
+          createdAt: true,
+          client: true,
+          wallet: true,
+          giveType: true,
+          getType: true,
+          bank: true,
+          chain: true,
+        },
+      }),
+      this.databaseService.clientRequest.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        perPage,
+        totalPages: Math.ceil(total / perPage),
+      },
+    };
+  }
   async getRequestById(id: string) {
     const res = await this.databaseService.clientRequest.findFirst({
-      where: { requestId: id },
+      where: { id: Number(id) },
     });
     return res;
   }

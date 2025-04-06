@@ -4,9 +4,9 @@ import { IPair } from "./price.interface";
 import { InfoService } from "./info/info.service";
 import { IMessageData } from "./message.interface";
 import { ClientService } from "./client/client.service";
-import { IClient, IClientRequest } from "./client/client-service.interface";
 import { CurrencyService } from "./currency/currency.service";
 import { CityService } from "./city/city.service";
+import { DatabaseService } from "./database/database.service";
 
 @Injectable()
 export class AppService {
@@ -15,14 +15,18 @@ export class AppService {
     private readonly clientService: ClientService,
     private readonly currencyService: CurrencyService,
     private readonly cityService: CityService,
+    private readonly databaseService: DatabaseService,
   ) {}
+
   private exchangeRates = [];
+
   addPercent(sum, percent, cityPercent) {
     if (cityPercent) {
       return sum - (sum / 100) * cityPercent;
     }
     return sum - (sum / 100) * percent;
   }
+
   calculateExchangeRate(baseCurrency: string, targetCurrency: string) {
     const baseRate = this.exchangeRates.find(
       (currency) => currency.cc === baseCurrency.toUpperCase(),
@@ -227,13 +231,10 @@ export class AppService {
   }
 
   async sendMessage(messageData: IMessageData) {
-    if (messageData.from == "bot") {
-      return await this.sendMessageFromBot(messageData);
-    }
     const telegram = await this.infoService.getBotData();
-    await this.saveClientData(messageData);
+    const requestData = await this.saveClientData(messageData);
     let message = `Нова заявка\n`;
-    if (messageData.requestId) {
+    if (requestData.id) {
       message += `ID заявки: <code>${messageData.requestId}</code>\n`;
     }
     message += `Ім'я:${messageData.name}\n`;
@@ -292,102 +293,45 @@ export class AppService {
     }
     return false;
   }
-  async sendMessageFromBot(messageData: IMessageData) {
-    const telegram = await this.infoService.getBotData();
-    await this.saveClientData(messageData);
-    let message = `Нова заявка\n`;
-    if (messageData.requestId) {
-      message += `ID заявки: <code>${messageData.requestId}</code>\n`;
-    }
-    message += `Ім'я:${messageData.name}\n`;
-    if (messageData.phone) message += `Телефон: ${messageData.phone}\n`;
-    if (messageData.telegram)
-      message += `Telegram: ${
-        messageData.telegram.startsWith("@")
-          ? messageData.telegram
-          : "@" + messageData.telegram
-      }\n`;
-    if (messageData.email) message += `Пошта: ${messageData.email}\n`;
-    if (messageData.type === "transaction") {
-      message += `Тип: Переказ коштів\n`;
-      message += `Тип траназції: ${messageData.transactionType}\n`;
-      if (messageData.transactionType === "offline") {
-        message += `Звідки: ${messageData.transactionFrom}\n`;
-        message += `Куди: ${messageData.transactionTo}\n`;
-      }
-    } else {
-      message += `Тип: ${messageData.type === "locale" ? "Нал\n" : "Безнал\n"}`;
-    }
-    message += `${messageData.city ? `Місто: ${messageData.city}\n` : ""}`;
-    message += `Віддає: ${messageData.giveCurrency.value}, кількість: ${messageData.giveSum}\n`;
-    message += `Отримує: ${messageData.getCurrency.value}, кількість: ${messageData.getSum}\n`;
-    message += `Курс: ${messageData.exchange}\n`;
-    if (
-      messageData.type === "online" ||
-      messageData.transactionType === "online"
-    ) {
-      if (messageData.getCurrency.type == "fiat")
-        message += `${messageData.bank ? `Банк: ${messageData.bank}\n` : ""}`;
-      else
-        message += `${
-          messageData.chain ? `Мережа: ${messageData.chain}\n` : ""
-        }`;
-      message += `Гаманець: ${messageData.wallet}\n`;
-    }
-    message += `Заявка відправленна з `;
-    if (messageData.from == "site") {
-      message += "сайту\n";
-    } else if (messageData.from == "bot") {
-      message += "телеграм боту\n";
-    } else if (messageData.from == "app") {
-      message += "застосунку\n";
-    } else {
-      message += "невідомого ресурсу";
-    }
-    if (telegram.telegramBotApi && telegram.telegramChatId) {
-      const res = await axios.post(
-        `https://api.telegram.org/bot${telegram.telegramBotApi}/sendMessage`,
-        {
-          chat_id: telegram.telegramChatId,
-          text: message,
-          parse_mode: "HTML",
+
+  async saveClientData(messageData: IMessageData) {
+    const client = await this.databaseService.client.upsert({
+      where: {
+        phone_name_telegram: {
+          phone: messageData.phone,
+          name: messageData.name,
+          telegram: messageData.telegram || "",
         },
-      );
-      if (res.data.ok) {
-        return true;
-      }
-      return false;
-    }
-    return false;
-  }
-  async saveClientData(data: IMessageData) {
-    const {
-      requestId,
-      clientId,
-      name,
-      telegram,
-      phone,
-      email,
-      giveCurrency,
-      getCurrency,
-      getSum,
-      giveSum,
-      exchange,
-      from,
-    } = data;
-    const client: IClient = { name, telegram, phone, email, clientId };
-    const clientRes = await this.clientService.addClient(client);
-    const requestData: IClientRequest = {
-      client_id: clientRes.id,
-      giveCurrency: giveCurrency.title,
-      getCurrency: getCurrency.title,
-      getSum,
-      giveSum,
-      exchange,
-      from: from,
-      requestId: requestId,
-    };
-    const request = await this.clientService.addClientRequest(requestData);
+      },
+      update: {},
+      create: {
+        name: messageData.name,
+        phone: messageData.phone,
+        telegram: messageData.telegram,
+        email: messageData.email,
+        clientId: messageData.clientId,
+      },
+    });
+
+    const request = await this.databaseService.clientRequest.create({
+      data: {
+        giveType: messageData.giveType.value,
+        getType: messageData.getType.value,
+        city: messageData.city,
+        giveCurrency: messageData.giveCurrency.value,
+        getCurrency: messageData.getCurrency.value,
+        giveSum: messageData.giveSum,
+        getSum: messageData.getSum,
+        exchange: messageData.exchange,
+        client_id: client.id,
+        bank: messageData?.bank,
+        chain: messageData?.chain,
+        wallet: messageData?.wallet,
+        from: messageData.from || "site",
+        status: "IN_PROGRESS",
+      },
+    });
+
     return request;
   }
 }
