@@ -124,6 +124,12 @@ export class ClientService {
     });
     return res;
   }
+  async getRequestByUUID(id: string) {
+    const res = await this.databaseService.clientRequest.findFirst({
+      where: { requestID: id },
+    });
+    return res;
+  }
   async getRequestsByClientId(clientId: string) {
     const client = await this.databaseService.client.findFirst({
       where: { clientId: String(clientId) },

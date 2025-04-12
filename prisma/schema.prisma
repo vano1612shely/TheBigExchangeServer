@@ -35,6 +35,7 @@ model ClientRequest {
   bank         String?
   chain        String?
   wallet       String?
+  requestID    String?
 }
 
 model User {

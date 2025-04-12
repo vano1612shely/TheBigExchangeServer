@@ -1,15 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
 import { Response } from "express";
 import { ClientService } from "./client.service";
+import { Public } from "../guards/decorators/public.decorator";
 
 @Controller("client")
 export class ClientController {
@@ -35,6 +27,15 @@ export class ClientController {
       page: pageNumber,
       perPage: perPageNumber,
     });
+  }
+  @Public()
+  @Get("/requestForCustomer/:id")
+  async getRequestByUUID(@Param() { id }: { id: string }) {
+    if (!id) {
+      return null;
+    }
+    const result = await this.clientService.getRequestByUUID(id);
+    return result;
   }
   @Get("/request/:id")
   async getRequestById(@Param() { id }: { id: string }) {

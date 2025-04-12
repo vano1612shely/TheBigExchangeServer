@@ -7,7 +7,7 @@ import { ClientService } from "./client/client.service";
 import { CurrencyService } from "./currency/currency.service";
 import { CityService } from "./city/city.service";
 import { DatabaseService } from "./database/database.service";
-
+import { v4 } from "uuid";
 @Injectable()
 export class AppService {
   constructor(
@@ -287,9 +287,9 @@ export class AppService {
         },
       );
       if (res.data.ok) {
-        return true;
+        return requestData.requestID;
       }
-      return false;
+      return requestData.requestID;
     }
     return false;
   }
@@ -315,6 +315,7 @@ export class AppService {
 
     const request = await this.databaseService.clientRequest.create({
       data: {
+        requestID: v4(),
         giveType: messageData.giveType.value,
         getType: messageData.getType.value,
         city: messageData.city,
