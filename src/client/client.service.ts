@@ -69,7 +69,7 @@ export class ClientService {
       2: RequestStatus.COMPLETED,
       3: RequestStatus.CANCELED,
     };
-    const update = await this.databaseService.clientRequest.updateMany({
+    const update = await this.databaseService.clientRequest.update({
       where: { id: Number(id) },
       data: { status: formatStatus[status] },
     });
